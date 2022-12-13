@@ -1,9 +1,10 @@
 package model
 
-type ShortendUrl struct {
-	Id       int    `json:"id"`
-	Redirect string `json:"redirect"`
-	Url      string `json:"url"`
+type ShortedUrl struct {
+	Id int `json:"id"`
+	// Redirect    string `json:"redirect"`
+	Url        string `json:"url"`
+	ShortedUrl string `json:"shorted_url"`
 }
 
 type UrlCreationRequest struct {

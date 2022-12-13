@@ -1,27 +1,37 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/labstack/echo"
 	"net/http"
 	"shortened_link/model"
-	"strconv"
 )
 
 var MyMap = make(map[string]string)
 
 func CreateShortedUrl(c echo.Context) error {
-	var request *model.ShortendUrl
+	var request *model.UrlCreationRequest
 	if err := c.Bind(&request); err != nil {
 		return echo.ErrBadRequest
 	}
-	//shortUrl := GenerateShortLink(model.UrlCreationRequest{})
-	shortUrl, err := GenerateShortedUrl(request.Url)
+	shortUrl, err := GenerateShortedUrl(request.LongUrl)
 	if err != nil {
 		return err
 	}
-	MyMap[request.Redirect] = request.Url
-	//fmt.Println("map:", MyMap)
+	MyMap[shortUrl] = request.LongUrl
+	fmt.Println("map:", MyMap)
 	return c.JSON(http.StatusOK, shortUrl)
+}
+
+func GetUrlFromShortedUrl(c echo.Context) error {
+	shortedUrl := c.Param("shortedUrl")
+
+	url, found := MyMap[shortedUrl]
+	if !found {
+		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
+	}
+
+	return c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 const (
@@ -30,12 +40,11 @@ const (
 
 func GenerateShortedUrl(url string) (string, error) {
 	lenght := len(alphabet)
-	MyMap[strconv.Itoa(lenght)] = url
 	shortUrl := ""
-	count := lenght + 1
+	count := len(MyMap) + 1
 	for count > 0 {
 		i := count % lenght
-		shortUrl += string(alphabet[i])
+		shortUrl += string(alphabet[i-1])
 		count = (count - i) / len(alphabet)
 	}
 	MyMap[shortUrl] = url
