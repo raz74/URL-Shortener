@@ -15,12 +15,16 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(5 * time.Second)
-			err := repository.WriteCSVFile(handler.MyMap, "repository/shorted.csv")
-			if err != nil {
-				log.Fatalln(err)
-				return
+			if handler.CountDif > 5 {
+				err := repository.WriteCSVFile(handler.MyMap, "repository/shorted.csv")
+				if err != nil {
+					log.Fatalln(err)
+					return
+				}
+				handler.CountDif = 0
 			}
 		}
+
 	}()
 
 	e := echo.New()

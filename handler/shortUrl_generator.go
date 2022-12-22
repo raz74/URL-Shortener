@@ -9,6 +9,9 @@ import (
 
 var MyMap = make(map[string]string)
 
+// count how many diffrent item have to write
+var CountDif = 0
+
 func CreateShortedUrl(c echo.Context) error {
 	var request *model.UrlCreationRequest
 	if err := c.Bind(&request); err != nil {
@@ -20,6 +23,7 @@ func CreateShortedUrl(c echo.Context) error {
 	}
 	MyMap[shortUrl] = request.LongUrl
 	fmt.Println("map:", MyMap)
+	CountDif++
 	return c.JSON(http.StatusOK, shortUrl)
 }
 
@@ -30,7 +34,6 @@ func GetUrlFromShortedUrl(c echo.Context) error {
 	if !found {
 		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
 	}
-
 	return c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
