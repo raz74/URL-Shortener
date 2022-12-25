@@ -2,3 +2,5 @@ test.go
 .idea
 Extensions /
 Database Consoles /
+
+.env
