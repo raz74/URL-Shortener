@@ -1,13 +1,15 @@
 package repository
 
 import (
+	"github.com/labstack/echo"
 	"gorm.io/gorm"
 	"shortened_link/model"
 )
 
 type UserRepository interface {
 	CreateUser(user *model.User) error
-	GetByEmail(Email string) error
+	CheckUniqueEmail(Email string) error
+	GetUserByEmail(Email string) (*model.User, error)
 }
 
 type UserRepositoryImpl struct {
@@ -15,9 +17,20 @@ type UserRepositoryImpl struct {
 }
 
 func (u *UserRepositoryImpl) CreateUser(user *model.User) error {
-	return nil
+	return u.PostgresDb.Create(&user).Error
 }
 
-func (u *UserRepositoryImpl) GetByEmail(Email string) error {
-	return nil
+func (u *UserRepositoryImpl) CheckUniqueEmail(Email string) error {
+	var user model.User
+	err := u.PostgresDb.Where("email=?", Email).Find(&user).RowsAffected
+	if err > 0 {
+		return echo.ErrForbidden
+	}
+	return echo.ErrBadRequest
+}
+
+func (u *UserRepositoryImpl) GetUserByEmail(Email string) (*model.User, error) {
+	var user model.User
+	err := u.PostgresDb.Where("email=?", Email).Find(&user).Error
+	return &user, err
 }
