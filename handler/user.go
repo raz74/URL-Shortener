@@ -31,7 +31,7 @@ func checkPasswordHash(Password, hash string) error {
 
 func (u *UserHandler) SignUp(c echo.Context) error {
 	var req request.UserRequest
-	err := c.Bind(req)
+	err := c.Bind(&req)
 	if err != nil {
 		return echo.ErrBadRequest
 	}
@@ -56,7 +56,7 @@ func (u *UserHandler) SignUp(c echo.Context) error {
 
 func (u *UserHandler) Login(c echo.Context) error {
 	var req request.UserRequest
-	err := c.Bind(req)
+	err := c.Bind(&req)
 	if err != nil {
 		return echo.ErrBadRequest
 	}

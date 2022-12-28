@@ -26,7 +26,7 @@ func (u *UserRepositoryImpl) CheckUniqueEmail(Email string) error {
 	if err > 0 {
 		return echo.ErrForbidden
 	}
-	return echo.ErrBadRequest
+	return nil
 }
 
 func (u *UserRepositoryImpl) GetUserByEmail(Email string) (*model.User, error) {
