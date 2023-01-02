@@ -9,6 +9,8 @@ import (
 	"shortened_link/repository"
 )
 
+var cookieMap = map[string]model.SessionCookie{}
+
 type UserHandler struct {
 	r repository.UserRepository
 }
@@ -64,9 +66,13 @@ func (u *UserHandler) Login(c echo.Context) error {
 	if err != nil {
 		return echo.ErrNotFound
 	}
-	check := checkPasswordHash(req.Password, user.Password)
-	if check != nil {
-		return c.JSON(http.StatusForbidden, "password is wrong! try again")
+	expectedPassword := checkPasswordHash(req.Password, user.Password)
+	if expectedPassword != nil {
+		return c.JSON(http.StatusUnauthorized, "password is wrong! try again")
 	}
-	return c.JSON(http.StatusOK, user)
+
+	//create a new random cookie session
+	cookieToken := GenerateSession(user)
+
+	return c.JSON(http.StatusOK, cookieToken)
 }

@@ -10,6 +10,12 @@ import (
 var MyMap = make(map[string]string)
 
 func CreateShortedUrl(c echo.Context) error {
+	header := c.Request().Header.Get("Authorization") // Token sadasdfasdfsa
+	err := CheckHeaderAuthorize(header)
+	if err != nil {
+		return err
+	}
+
 	var request *model.UrlCreationRequest
 	if err := c.Bind(&request); err != nil {
 		return echo.ErrBadRequest
