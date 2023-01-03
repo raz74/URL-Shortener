@@ -11,7 +11,7 @@ import (
 func GenerateSession(user *model.User) string {
 	//create a new random cookie session
 	cookieToken := uuid.NewString()
-	expiresAt := time.Now().Add(120 * time.Second)
+	expiresAt := time.Now().Add(7 * 24 * time.Hour)
 
 	cookieMap[cookieToken] = model.SessionCookie{
 		Expire: expiresAt,

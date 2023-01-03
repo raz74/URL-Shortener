@@ -23,15 +23,23 @@ func (u *UrlHandler) CreateShortedUrl(c echo.Context) error {
 	}
 
 	var request *model.UrlCreationRequest
+	var shortUrl string
 	if err := c.Bind(&request); err != nil {
 		return echo.ErrBadRequest
 	}
+	if len(request.CustomUrl) > 0 {
+		shortUrl, err = u.urlService.AddCustomUrl(request.CustomUrl, request.LongUrl)
+		if err != nil {
+			return echo.ErrForbidden
+		}
+	} else {
+		shortUrl, err = u.urlService.AddUrl(request.LongUrl)
 
-	shortUrl, err := u.urlService.AddUrl(request.LongUrl)
-
-	if err != nil {
-		return echo.ErrInternalServerError
+		if err != nil {
+			return echo.ErrInternalServerError
+		}
 	}
+
 	return c.JSON(http.StatusOK, shortUrl)
 }
 

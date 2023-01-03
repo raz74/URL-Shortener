@@ -8,7 +8,8 @@ type ShortedUrl struct {
 }
 
 type UrlCreationRequest struct {
-	LongUrl string `json:"url"`
+	LongUrl   string `json:"url"`
+	CustomUrl string `json:"customUrl"`
 
 	//Random bool `json:"random"`
 }

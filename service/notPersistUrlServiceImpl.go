@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/labstack/echo"
 	"log"
 	"shortened_link/repository"
 	"time"
@@ -37,6 +38,19 @@ func (u *UrlServiceImpl) AddUrl(srcUrl string) (string, error) {
 	}
 	shortToSrcMap[shortUrl] = srcUrl
 	fmt.Println("map:", shortToSrcMap)
+	return shortUrl, nil
+}
+
+func (u *UrlServiceImpl) AddCustomUrl(customUrl, srcUrl string) (string, error) {
+	shortUrl := customUrl
+	// check custom url is unique!
+	_, isFound := shortToSrcMap[shortUrl]
+	if !isFound {
+		shortToSrcMap[shortUrl] = srcUrl
+		fmt.Println("map:", shortToSrcMap)
+	} else {
+		return "This short Url is already exist!", echo.ErrForbidden
+	}
 	return shortUrl, nil
 }
 
