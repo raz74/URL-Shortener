@@ -6,7 +6,7 @@ import (
 	"log"
 	"shortened_link/handler"
 	"shortened_link/repository"
-	"time"
+	"shortened_link/service"
 )
 
 func main() {
@@ -20,23 +20,12 @@ func main() {
 	}
 	h := handler.NewUserHandler(&r)
 
-	//to do : call read csv file to load before requests start
-	// Read shorted urls from 'shorted.csv'
-	handler.MyMap, _ = repository.ReadCSVFile("repository/shorted.csv")
-	go func() {
-		for {
-			time.Sleep(5 * time.Second)
-			err := repository.WriteCSVFile(handler.MyMap, "repository/shorted.csv")
-			if err != nil {
-				log.Fatalln(err)
-				return
-			}
-		}
-	}()
+	urlService := service.UrlServiceImpl{}
+	urlHandler := handler.NewUrlHandler(&urlService)
 
 	e := echo.New()
-	e.POST("/shorted", handler.CreateShortedUrl)
-	e.GET("/:shortedUrl", handler.GetUrlFromShortedUrl)
+	e.POST("/shorted", urlHandler.CreateShortedUrl)
+	e.GET("/:shortedUrl", urlHandler.GetUrlFromShortedUrl)
 	e.POST("/login", h.Login)
 	e.POST("/signup", h.SignUp)
 	e.Logger.Fatal(e.Start(":3000"))
