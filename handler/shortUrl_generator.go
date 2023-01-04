@@ -23,7 +23,7 @@ func (u *UrlHandler) CreateShortedUrl(c echo.Context) error {
 	}
 
 	var request *model.UrlCreationRequest
-	var shortUrl string
+	var shortUrl *model.ShortedUrl
 	if err := c.Bind(&request); err != nil {
 		return echo.ErrBadRequest
 	}
@@ -52,5 +52,5 @@ func (u *UrlHandler) GetUrlFromShortedUrl(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
 	}
 
-	return c.Redirect(http.StatusTemporaryRedirect, url)
+	return c.Redirect(http.StatusTemporaryRedirect, url.LongUrl)
 }

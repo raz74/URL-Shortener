@@ -4,6 +4,8 @@ import (
 	"encoding/csv"
 	"log"
 	"os"
+	"shortened_link/model"
+	"time"
 )
 
 //type CSVRepository interface {
@@ -29,7 +31,7 @@ import (
 //
 //}
 
-func ReadCSVFile(filePath string) (map[string]string, error) {
+func ReadCSVFile(filePath string) (map[string]model.ShortedUrl, error) {
 	CSVFile, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal(err)
@@ -48,16 +50,22 @@ func ReadCSVFile(filePath string) (map[string]string, error) {
 		log.Fatal("Unable to parse file as CSV for " + filePath)
 	}
 	//fmt.Print(records)
-	m := make(map[string]string)
+	m := make(map[string]model.ShortedUrl)
 	for _, row := range records {
-		m[row[0]] = row[1]
+		expiredAt, _ := time.Parse("2023-01-11 16:17:57.189364484 +0330 +0330 m=+604805.251998686", row[2])
+		m[row[0]] = model.ShortedUrl{
+			Id:         0,
+			LongUrl:    row[1],
+			ShortedUrl: row[0],
+			ExpiredAt:  expiredAt,
+		}
 		//log.Fatal(row)
 	}
 
 	return m, err
 }
 
-func WriteCSVFile(MyMap map[string]string, outputPath string) error {
+func WriteCSVFile(MyMap map[string]model.ShortedUrl, outputPath string) error {
 	CSVFile, err := os.Create(outputPath)
 	if err != nil {
 		log.Fatal(err)
@@ -67,7 +75,7 @@ func WriteCSVFile(MyMap map[string]string, outputPath string) error {
 	var data [][]string
 	i := 0
 	for key, record := range MyMap {
-		data = append(data, []string{key, record})
+		data = append(data, []string{key, record.LongUrl, record.ExpiredAt.String()})
 		i++
 	}
 	err = Writer.WriteAll(data)

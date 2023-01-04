@@ -1,7 +1,9 @@
 package service
 
+import "shortened_link/model"
+
 type UrlService interface {
-	AddUrl(string) (string, error)
-	AddCustomUrl(string, string) (string, error)
-	GetUrl(string) (string, bool)
+	AddUrl(string) (*model.ShortedUrl, error)
+	AddCustomUrl(string, string) (*model.ShortedUrl, error)
+	GetUrl(string) (*model.ShortedUrl, bool)
 }
