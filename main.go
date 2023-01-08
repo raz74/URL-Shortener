@@ -1,37 +1,34 @@
 package main
 
 import (
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
 	"log"
 	"shortened_link/handler"
 	"shortened_link/repository"
-	"time"
+	"shortened_link/service"
 )
 
 func main() {
-	//to do : call read csv file to load before requests start
-	// Read shorted urls from 'shorted.csv'
-	handler.MyMap, _ = repository.ReadCSVFile("repository/shorted.csv")
-	go func() {
-		for {
-			time.Sleep(5 * time.Second)
-			if handler.CountDif > 5 {
-				err := repository.WriteCSVFile(handler.MyMap, "repository/shorted.csv")
-				if err != nil {
-					log.Fatalln(err)
-					return
-				}
-				handler.CountDif = 0
-			}
-		}
+	db := repository.Initialize()
+	r := repository.UserRepositoryImpl{
+		PostgresDb: db,
+	}
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Println("Error to load env file!!")
+	}
+	h := handler.NewUserHandler(&r)
 
-	}()
+	urlService := service.UrlServiceImpl{}
+	urlHandler := handler.NewUrlHandler(&urlService)
 
 	e := echo.New()
-	e.POST("/shorted", handler.CreateShortedUrl)
-	e.GET("/:shortedUrl", handler.GetUrlFromShortedUrl)
+	e.POST("/shorted", urlHandler.CreateShortedUrl)
+	e.GET("/:shortedUrl", urlHandler.GetUrlFromShortedUrl)
+	e.POST("/login", h.Login)
+	e.POST("/signup", h.SignUp)
+	e.PUT("/:shortedUrl", urlHandler.UpdateUrl)
+	e.DELETE("/:shorted", urlHandler.DeleteShortedUrl)
 	e.Logger.Fatal(e.Start(":3000"))
-
-	// to do: call write in csv at the end of main!
-
 }

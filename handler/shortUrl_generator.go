@@ -5,51 +5,100 @@ import (
 	"github.com/labstack/echo"
 	"net/http"
 	"shortened_link/model"
+	"shortened_link/service"
 )
 
-var MyMap = make(map[string]string)
+type UrlHandler struct {
+	urlService service.UrlService
+}
 
-// count how many diffrent item have to write
-var CountDif = 0
+func NewUrlHandler(urlService service.UrlService) *UrlHandler {
+	return &UrlHandler{urlService: urlService}
+}
 
-func CreateShortedUrl(c echo.Context) error {
+func (u *UrlHandler) CreateShortedUrl(c echo.Context) error {
+	header := c.Request().Header.Get("Authorization") // Token sadasdfasdfsa
+	err := CheckHeaderAuthorize(header)
+	//if err != nil {
+	//	return err
+	//}
+
 	var request *model.UrlCreationRequest
+	var shortUrl *model.ShortedUrl
 	if err := c.Bind(&request); err != nil {
 		return echo.ErrBadRequest
 	}
-	shortUrl, err := GenerateShortedUrl(request.LongUrl)
-	if err != nil {
-		return err
+	if len(request.CustomUrl) > 0 {
+		shortUrl, err = u.urlService.AddCustomUrl(request.CustomUrl, request.LongUrl)
+		if err != nil {
+			return echo.ErrForbidden
+		}
+	} else {
+		shortUrl, err = u.urlService.AddUrl(request.LongUrl)
+
+		if err != nil {
+			return echo.ErrInternalServerError
+		}
 	}
-	MyMap[shortUrl] = request.LongUrl
-	fmt.Println("map:", MyMap)
-	CountDif++
+
 	return c.JSON(http.StatusOK, shortUrl)
 }
 
-func GetUrlFromShortedUrl(c echo.Context) error {
+func (u *UrlHandler) GetUrlFromShortedUrl(c echo.Context) error {
 	shortedUrl := c.Param("shortedUrl")
 
-	url, found := MyMap[shortedUrl]
+	url, found := u.urlService.GetUrl(shortedUrl)
+
 	if !found {
 		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
 	}
-	return c.Redirect(http.StatusTemporaryRedirect, url)
+	fmt.Print(url)
+	return c.Redirect(http.StatusTemporaryRedirect, url.LongUrl)
 }
 
-const (
-	alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-)
+func (u *UrlHandler) UpdateUrl(c echo.Context) error {
+	header := c.Request().Header.Get("Authorization")
+	err := CheckHeaderAuthorize(header)
+	//if err != nil {
+	//	return err
+	//}
 
-func GenerateShortedUrl(url string) (string, error) {
-	lenght := len(alphabet)
-	shortUrl := ""
-	count := len(MyMap) + 1
-	for count > 0 {
-		i := count % lenght
-		shortUrl += string(alphabet[i-1])
-		count = (count - i) / len(alphabet)
+	shortedUrl := c.Param("shortedUrl")
+	theShort, found := u.urlService.GetUrl(shortedUrl)
+	if !found {
+		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
 	}
-	MyMap[shortUrl] = url
-	return shortUrl, nil
+	custom := theShort.Custom
+	var request model.UrlUpdateRequest
+	var result *model.ShortedUrl
+	if err := c.Bind(&request); err != nil {
+		return echo.ErrBadRequest
+	}
+	//non custom users just can update long url
+	if !custom {
+		result, err = u.urlService.UpdateLongUrl(shortedUrl, request.LongUrl)
+		if err != nil {
+			return echo.ErrBadRequest
+		}
+	}
+	if custom {
+		result, err = u.urlService.UpdateShortUrl(shortedUrl, request.ShortUrl)
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
+func (u *UrlHandler) DeleteShortedUrl(c echo.Context) error {
+	shorted := c.Param("shortedUrl")
+
+	_, found := u.urlService.GetUrl(shorted)
+	if !found {
+		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
+	}
+
+	err := u.urlService.DeleteUrl(shorted)
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+	return c.JSON(http.StatusOK, "delete successfully")
 }
