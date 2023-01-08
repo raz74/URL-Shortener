@@ -28,5 +28,7 @@ func main() {
 	e.GET("/:shortedUrl", urlHandler.GetUrlFromShortedUrl)
 	e.POST("/login", h.Login)
 	e.POST("/signup", h.SignUp)
+	e.PUT("/:shortedUrl", urlHandler.UpdateUrl)
+	e.DELETE("/:shorted", urlHandler.DeleteShortedUrl)
 	e.Logger.Fatal(e.Start(":3000"))
 }

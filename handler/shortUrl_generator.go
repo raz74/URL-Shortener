@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/labstack/echo"
 	"net/http"
 	"shortened_link/model"
@@ -18,9 +19,9 @@ func NewUrlHandler(urlService service.UrlService) *UrlHandler {
 func (u *UrlHandler) CreateShortedUrl(c echo.Context) error {
 	header := c.Request().Header.Get("Authorization") // Token sadasdfasdfsa
 	err := CheckHeaderAuthorize(header)
-	if err != nil {
-		return err
-	}
+	//if err != nil {
+	//	return err
+	//}
 
 	var request *model.UrlCreationRequest
 	var shortUrl *model.ShortedUrl
@@ -51,6 +52,53 @@ func (u *UrlHandler) GetUrlFromShortedUrl(c echo.Context) error {
 	if !found {
 		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
 	}
-
+	fmt.Print(url)
 	return c.Redirect(http.StatusTemporaryRedirect, url.LongUrl)
+}
+
+func (u *UrlHandler) UpdateUrl(c echo.Context) error {
+	header := c.Request().Header.Get("Authorization")
+	err := CheckHeaderAuthorize(header)
+	//if err != nil {
+	//	return err
+	//}
+
+	shortedUrl := c.Param("shortedUrl")
+	theShort, found := u.urlService.GetUrl(shortedUrl)
+	if !found {
+		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
+	}
+	custom := theShort.Custom
+	var request model.UrlUpdateRequest
+	var result *model.ShortedUrl
+	if err := c.Bind(&request); err != nil {
+		return echo.ErrBadRequest
+	}
+	//non custom users just can update long url
+	if !custom {
+		result, err = u.urlService.UpdateLongUrl(shortedUrl, request.LongUrl)
+		if err != nil {
+			return echo.ErrBadRequest
+		}
+	}
+	if custom {
+		result, err = u.urlService.UpdateShortUrl(shortedUrl, request.ShortUrl)
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
+func (u *UrlHandler) DeleteShortedUrl(c echo.Context) error {
+	shorted := c.Param("shortedUrl")
+
+	_, found := u.urlService.GetUrl(shorted)
+	if !found {
+		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
+	}
+
+	err := u.urlService.DeleteUrl(shorted)
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+	return c.JSON(http.StatusOK, "delete successfully")
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"github.com/labstack/echo"
 	"log"
 	"shortened_link/model"
 	"shortened_link/repository"
@@ -44,6 +45,7 @@ func (u *UrlServiceImpl) AddUrl(srcUrl string) (*model.ShortedUrl, error) {
 		LongUrl:    srcUrl,
 		ExpiredAt:  expireTime,
 		ShortedUrl: newShort,
+		Custom:     false,
 	}
 	shortToSrcMap[newShort] = shortUrl
 	fmt.Println("map:", shortToSrcMap)
@@ -61,6 +63,7 @@ func (u *UrlServiceImpl) AddCustomUrl(customUrl, srcUrl string) (*model.ShortedU
 			LongUrl:    srcUrl,
 			ShortedUrl: customUrl,
 			ExpiredAt:  expireTime,
+			Custom:     true,
 		}
 		shortToSrcMap[customUrl] = shortUrl
 		fmt.Println("map:", shortToSrcMap)
@@ -72,11 +75,51 @@ func (u *UrlServiceImpl) AddCustomUrl(customUrl, srcUrl string) (*model.ShortedU
 
 func (u *UrlServiceImpl) GetUrl(shortUrl string) (*model.ShortedUrl, bool) {
 	result, isFound := shortToSrcMap[shortUrl]
-	if result.IsExpire() {
+	if isFound && result.IsExpire() {
 		delete(shortToSrcMap, shortUrl)
 		return &result, !isFound
 	}
 	return &result, isFound
+}
+
+func (u *UrlServiceImpl) UpdateLongUrl(shorted, newLong string) (*model.ShortedUrl, error) {
+	var shortedUrl model.ShortedUrl
+	shortedUrl.LongUrl = newLong
+	ex := shortToSrcMap[shorted].ExpiredAt
+	shortedUrl = model.ShortedUrl{
+		LongUrl:    newLong,
+		ShortedUrl: shorted,
+		ExpiredAt:  ex,
+		Custom:     false,
+	}
+	shortToSrcMap[shorted] = shortedUrl
+	return &shortedUrl, nil
+}
+
+func (u *UrlServiceImpl) UpdateShortUrl(key, newShort string) (*model.ShortedUrl, error) {
+	var shortedUrl model.ShortedUrl
+	ex := shortToSrcMap[key].ExpiredAt
+	y := shortToSrcMap[key].LongUrl
+	//check new short is unique
+	_, isFound := shortToSrcMap[newShort]
+	if isFound {
+		return nil, echo.ErrForbidden
+	}
+	delete(shortToSrcMap, key)
+	key = newShort
+	shortedUrl = model.ShortedUrl{
+		LongUrl:    y,
+		ShortedUrl: newShort,
+		ExpiredAt:  ex,
+		Custom:     true,
+	}
+	shortToSrcMap[newShort] = shortedUrl
+	return &shortedUrl, nil
+}
+
+func (u *UrlServiceImpl) DeleteUrl(shorted string) error {
+	delete(shortToSrcMap, shorted)
+	return nil
 }
 
 func (u *UrlServiceImpl) generateShortedUrl() (string, error) {

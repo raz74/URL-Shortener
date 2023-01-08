@@ -52,7 +52,7 @@ func ReadCSVFile(filePath string) (map[string]model.ShortedUrl, error) {
 	//fmt.Print(records)
 	m := make(map[string]model.ShortedUrl)
 	for _, row := range records {
-		expiredAt, _ := time.Parse("2023-01-11 16:17:57.189364484 +0330 +0330 m=+604805.251998686", row[2])
+		expiredAt, _ := time.Parse("2006-January-02", row[2])
 		m[row[0]] = model.ShortedUrl{
 			Id:         0,
 			LongUrl:    row[1],
@@ -75,7 +75,7 @@ func WriteCSVFile(MyMap map[string]model.ShortedUrl, outputPath string) error {
 	var data [][]string
 	i := 0
 	for key, record := range MyMap {
-		data = append(data, []string{key, record.LongUrl, record.ExpiredAt.String()})
+		data = append(data, []string{key, record.LongUrl, record.ExpiredAt.Format("2006-January-02")})
 		i++
 	}
 	err = Writer.WriteAll(data)
