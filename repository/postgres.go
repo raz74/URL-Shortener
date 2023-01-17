@@ -23,6 +23,10 @@ func Initialize() *gorm.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = database.AutoMigrate(&model.ShortedUrl{})
+	if err != nil {
+		log.Fatal(err)
+	}
 	return database
 }
 

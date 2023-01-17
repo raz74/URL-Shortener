@@ -6,7 +6,7 @@ import (
 	"log"
 	"shortened_link/handler"
 	"shortened_link/repository"
-	"shortened_link/service"
+	"shortened_link/service/url"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	}
 	h := handler.NewUserHandler(&r)
 
-	urlService := service.UrlServiceImpl{}
+	urlService := url.PostgresUrlServiceImpl{DB: db}
 	urlHandler := handler.NewUrlHandler(&urlService)
 
 	e := echo.New()

@@ -5,14 +5,14 @@ import (
 	"github.com/labstack/echo"
 	"net/http"
 	"shortened_link/model"
-	"shortened_link/service"
+	"shortened_link/service/url"
 )
 
 type UrlHandler struct {
-	urlService service.UrlService
+	urlService url.UrlService
 }
 
-func NewUrlHandler(urlService service.UrlService) *UrlHandler {
+func NewUrlHandler(urlService url.UrlService) *UrlHandler {
 	return &UrlHandler{urlService: urlService}
 }
 
@@ -47,13 +47,13 @@ func (u *UrlHandler) CreateShortedUrl(c echo.Context) error {
 func (u *UrlHandler) GetUrlFromShortedUrl(c echo.Context) error {
 	shortedUrl := c.Param("shortedUrl")
 
-	url, found := u.urlService.GetUrl(shortedUrl)
+	getUrl, found := u.urlService.GetUrl(shortedUrl)
 
 	if !found {
 		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
 	}
-	fmt.Print(url)
-	return c.Redirect(http.StatusTemporaryRedirect, url.LongUrl)
+	fmt.Print(getUrl)
+	return c.Redirect(http.StatusTemporaryRedirect, getUrl.LongUrl)
 }
 
 func (u *UrlHandler) UpdateUrl(c echo.Context) error {
@@ -83,6 +83,9 @@ func (u *UrlHandler) UpdateUrl(c echo.Context) error {
 	}
 	if custom {
 		result, err = u.urlService.UpdateShortUrl(shortedUrl, request.ShortUrl)
+		if err != nil {
+			return echo.ErrBadRequest
+		}
 	}
 
 	return c.JSON(http.StatusOK, result)

@@ -5,8 +5,7 @@ import (
 )
 
 type ShortedUrl struct {
-	Id int `json:"id"`
-	// Redirect    string `json:"redirect"`
+	ID         int       `json:"id"`
 	LongUrl    string    `json:"url"`
 	ShortedUrl string    `json:"shorted_url"`
 	ExpiredAt  time.Time `json:"expired_at"`
