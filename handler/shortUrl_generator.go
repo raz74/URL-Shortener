@@ -5,23 +5,28 @@ import (
 	"github.com/labstack/echo"
 	"net/http"
 	"shortened_link/model"
-	"shortened_link/service"
+	"shortened_link/repository"
+	"shortened_link/service/url"
 )
 
 type UrlHandler struct {
-	urlService service.UrlService
+	urlService url.UrlService
+	token      repository.TokenRepository
 }
 
-func NewUrlHandler(urlService service.UrlService) *UrlHandler {
-	return &UrlHandler{urlService: urlService}
+func NewUrlHandler(urlService url.UrlService, token repository.TokenRepository) *UrlHandler {
+	return &UrlHandler{
+		urlService: urlService,
+		token:      token,
+	}
 }
 
 func (u *UrlHandler) CreateShortedUrl(c echo.Context) error {
 	header := c.Request().Header.Get("Authorization") // Token sadasdfasdfsa
-	err := CheckHeaderAuthorize(header)
-	//if err != nil {
-	//	return err
-	//}
+	_, err := u.token.Get(header)
+	if err != nil {
+		return echo.ErrUnauthorized
+	}
 
 	var request *model.UrlCreationRequest
 	var shortUrl *model.ShortedUrl
@@ -47,21 +52,21 @@ func (u *UrlHandler) CreateShortedUrl(c echo.Context) error {
 func (u *UrlHandler) GetUrlFromShortedUrl(c echo.Context) error {
 	shortedUrl := c.Param("shortedUrl")
 
-	url, found := u.urlService.GetUrl(shortedUrl)
+	getUrl, found := u.urlService.GetUrl(shortedUrl)
 
 	if !found {
 		return c.JSON(http.StatusNotFound, "This shorted_url is not existing!")
 	}
-	fmt.Print(url)
-	return c.Redirect(http.StatusTemporaryRedirect, url.LongUrl)
+	fmt.Print(getUrl)
+	return c.Redirect(http.StatusTemporaryRedirect, getUrl.LongUrl)
 }
 
 func (u *UrlHandler) UpdateUrl(c echo.Context) error {
 	header := c.Request().Header.Get("Authorization")
-	err := CheckHeaderAuthorize(header)
-	//if err != nil {
-	//	return err
-	//}
+	_, err := u.token.Get(header)
+	if err != nil {
+		return echo.ErrUnauthorized
+	}
 
 	shortedUrl := c.Param("shortedUrl")
 	theShort, found := u.urlService.GetUrl(shortedUrl)
@@ -83,6 +88,9 @@ func (u *UrlHandler) UpdateUrl(c echo.Context) error {
 	}
 	if custom {
 		result, err = u.urlService.UpdateShortUrl(shortedUrl, request.ShortUrl)
+		if err != nil {
+			return echo.ErrBadRequest
+		}
 	}
 
 	return c.JSON(http.StatusOK, result)

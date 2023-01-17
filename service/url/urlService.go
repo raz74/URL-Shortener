@@ -1,4 +1,4 @@
-package service
+package url
 
 import "shortened_link/model"
 

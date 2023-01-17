@@ -3,11 +3,7 @@ package model
 import "time"
 
 type SessionCookie struct {
-	Name   string
+	UserID int `gorm:"primaryKey"`
 	Value  string
 	Expire time.Time
-}
-
-func (s SessionCookie) IsExpire() bool {
-	return s.Expire.Before(time.Now())
 }

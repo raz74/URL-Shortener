@@ -1,12 +1,10 @@
-package service
+package url
 
 import (
 	"errors"
 	"fmt"
 	"github.com/labstack/echo"
-	"log"
 	"shortened_link/model"
-	"shortened_link/repository"
 	"time"
 )
 
@@ -17,20 +15,6 @@ const (
 var shortToSrcMap = map[string]model.ShortedUrl{}
 
 type UrlServiceImpl struct {
-}
-
-func init() {
-	shortToSrcMap, _ = repository.ReadCSVFile("repository/shorted.csv")
-	go func() {
-		for {
-			time.Sleep(5 * time.Second)
-			err := repository.WriteCSVFile(shortToSrcMap, "repository/shorted.csv")
-			if err != nil {
-				log.Fatalln(err)
-				return
-			}
-		}
-	}()
 }
 
 func (u *UrlServiceImpl) AddUrl(srcUrl string) (*model.ShortedUrl, error) {
@@ -128,7 +112,7 @@ func (u *UrlServiceImpl) generateShortedUrl() (string, error) {
 	count := len(shortToSrcMap) + 1
 	for count > 0 {
 		i := count % lenght
-		shortUrl += string(alphabet[i-1])
+		shortUrl += string(alphabet[i])
 		count = (count - i) / len(alphabet)
 	}
 	return shortUrl, nil

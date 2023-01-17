@@ -9,15 +9,17 @@ import (
 	"shortened_link/repository"
 )
 
-var cookieMap = map[string]model.SessionCookie{}
+//var cookieMap = map[string]model.SessionCookie{}
 
 type UserHandler struct {
 	r repository.UserRepository
+	t repository.TokenRepository
 }
 
-func NewUserHandler(repo repository.UserRepository) *UserHandler {
+func NewUserHandler(repo repository.UserRepository, tok repository.TokenRepository) *UserHandler {
 	return &UserHandler{
 		r: repo,
+		t: tok,
 	}
 }
 
@@ -72,7 +74,11 @@ func (u *UserHandler) Login(c echo.Context) error {
 	}
 
 	//create a new random cookie session
-	cookieToken := GenerateSession(user)
+	cookieToken, err := u.t.Create(user)
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+	token := cookieToken.Value
 
-	return c.JSON(http.StatusOK, cookieToken)
+	return c.JSON(http.StatusOK, token)
 }
