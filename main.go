@@ -13,7 +13,7 @@ import (
 func main() {
 	db := repository.Initialize()
 	mongodb := repository.MongoInitialize()
-	//r := repository.UserRepositoryImpl{
+	//r := repository.PostgresUserRepositoryImpl{
 	//	PostgresDb: db,
 	//}
 	rMongo := userRepository.NewMongoUserRepositoryImpl(mongodb)

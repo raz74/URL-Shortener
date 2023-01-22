@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   database:
-    container_name: database
+    container_name: postgresDB
     image: postgres:latest
     restart: unless-stopped
     environment:
@@ -14,5 +14,22 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
 
+
+  mongo:
+    container_name: mongoDB
+    image: mongo:latest
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=pg
+      - MONGO_INITDB_ROOT_PASSWORD=123
+      - MONGO_DB=mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo:/var/lib/postgresql/data
+
+
+
 volumes:
   postgres:
+  mongo:

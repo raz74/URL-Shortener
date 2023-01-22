@@ -14,7 +14,7 @@ type mongoRepo struct {
 func NewMongoUserRepositoryImpl(mongodb *mongo.Client) repository.UserRepository {
 	return &mongoRepo{
 		Mongodb:    mongodb,
-		collection: mongodb.Database("x").Collection("y"),
+		collection: mongodb.Database("Shortener_Url").Collection("user"),
 	}
 }
 
