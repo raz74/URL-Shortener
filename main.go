@@ -6,14 +6,17 @@ import (
 	"log"
 	"shortened_link/handler"
 	"shortened_link/repository"
+	"shortened_link/repository/userRepository"
 	"shortened_link/service/url"
 )
 
 func main() {
 	db := repository.Initialize()
-	r := repository.UserRepositoryImpl{
-		PostgresDb: db,
-	}
+	mongodb := repository.MongoInitialize()
+	//r := repository.UserRepositoryImpl{
+	//	PostgresDb: db,
+	//}
+	rMongo := userRepository.NewMongoUserRepositoryImpl(mongodb)
 	t := repository.TokenRepositoryImp{
 		PostgresDb: db,
 	}
@@ -23,7 +26,7 @@ func main() {
 		log.Println("Error to load env file!!")
 	}
 
-	h := handler.NewUserHandler(&r, &t)
+	h := handler.NewUserHandler(rMongo, &t)
 
 	urlService := url.PostgresUrlServiceImpl{DB: db}
 	urlHandler := handler.NewUrlHandler(&urlService, &t)
