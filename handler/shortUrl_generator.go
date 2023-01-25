@@ -11,10 +11,10 @@ import (
 
 type UrlHandler struct {
 	urlService url.UrlService
-	token      repository.TokenRepository
+	token      repository.TokenRepo
 }
 
-func NewUrlHandler(urlService url.UrlService, token repository.TokenRepository) *UrlHandler {
+func NewUrlHandler(urlService url.UrlService, token repository.TokenRepo) *UrlHandler {
 	return &UrlHandler{
 		urlService: urlService,
 		token:      token,

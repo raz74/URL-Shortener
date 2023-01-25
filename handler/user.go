@@ -13,10 +13,10 @@ import (
 
 type UserHandler struct {
 	r repository.UserRepository
-	t repository.TokenRepository
+	t repository.TokenRepo
 }
 
-func NewUserHandler(repo repository.UserRepository, tok repository.TokenRepository) *UserHandler {
+func NewUserHandler(repo repository.UserRepository, tok repository.TokenRepo) *UserHandler {
 	return &UserHandler{
 		r: repo,
 		t: tok,

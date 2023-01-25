@@ -14,7 +14,7 @@ type mongoRepo struct {
 	collection *mongo.Collection
 }
 
-func NewMongoUserRepositoryImpl(mongodb *mongo.Client) repository.UserRepository {
+func NewMongoUserRepoImpl(mongodb *mongo.Client) repository.UserRepository {
 	return &mongoRepo{
 		Mongodb:    mongodb,
 		collection: mongodb.Database("Shortener_Url").Collection("users"),
@@ -32,16 +32,18 @@ func (m *mongoRepo) CreateUser(user *model.User) error {
 func (m *mongoRepo) CheckUniqueEmail(Email string) error {
 	var user model.User
 	//If find the document, the err will be nil
-	err := m.collection.FindOne(context.TODO(), bson.D{{"email", Email}}).Decode(&user)
-	if err == nil {
-		err = mongo.ErrNoDocuments
-		return err
-	}
-	//results, err := m.collection.Find(context.T ODO(), bson.D{{"email", Email}})
-	//if err != nil {
+	//err := m.collection.FindOne(context.T ODO(), bson.D{{"email", Email}}).Decode(&user)
+	//if err == nil {
+	//	err = mongo.ErrNoDocuments
 	//	return err
 	//}
-	//fmt.Printf("%+v", results)
+	count, err := m.collection.CountDocuments(context.TODO(), bson.D{{"email", Email}})
+	if err != nil {
+		return err
+	}
+	if count >= 0 {
+		return mongo.ErrNoDocuments
+	}
 	fmt.Printf("%+v", user)
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"log"
 	"shortened_link/handler"
 	"shortened_link/repository"
+	"shortened_link/repository/token"
 	"shortened_link/repository/userRepository"
 	"shortened_link/service/url"
 )
@@ -16,20 +17,22 @@ func main() {
 	//r := repository.PostgresUserRepositoryImpl{
 	//	PostgresDb: db,
 	//}
-	rMongo := userRepository.NewMongoUserRepositoryImpl(mongodb)
-	t := repository.TokenRepositoryImp{
-		PostgresDb: db,
-	}
+	rMongo := userRepository.NewMongoUserRepoImpl(mongodb)
+
+	//t := token.PostTokenRepoImp{
+	//	PostgresDb: db,
+	//}
+	tMongo := token.NewMongoTokenRepoImp(mongodb)
 
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Println("Error to load env file!!")
 	}
 
-	h := handler.NewUserHandler(rMongo, &t)
+	h := handler.NewUserHandler(rMongo, tMongo)
 
 	urlService := url.PostgresUrlServiceImpl{DB: db}
-	urlHandler := handler.NewUrlHandler(&urlService, &t)
+	urlHandler := handler.NewUrlHandler(&urlService, tMongo)
 
 	e := echo.New()
 	e.POST("/shorted", urlHandler.CreateShortedUrl)
