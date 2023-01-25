@@ -1,6 +1,9 @@
 package userRepository
 
 import (
+	"context"
+	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"shortened_link/model"
 	"shortened_link/repository"
@@ -14,21 +17,40 @@ type mongoRepo struct {
 func NewMongoUserRepositoryImpl(mongodb *mongo.Client) repository.UserRepository {
 	return &mongoRepo{
 		Mongodb:    mongodb,
-		collection: mongodb.Database("Shortener_Url").Collection("user"),
+		collection: mongodb.Database("Shortener_Url").Collection("users"),
 	}
 }
 
 func (m *mongoRepo) CreateUser(user *model.User) error {
-	//TODO implement me
-	panic("implement me")
+	_, err := m.collection.InsertOne(context.TODO(), user)
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 func (m *mongoRepo) CheckUniqueEmail(Email string) error {
-	//TODO implement me
-	panic("implement me")
+	var user model.User
+	//If find the document, the err will be nil
+	err := m.collection.FindOne(context.TODO(), bson.D{{"email", Email}}).Decode(&user)
+	if err == nil {
+		err = mongo.ErrNoDocuments
+		return err
+	}
+	//results, err := m.collection.Find(context.T ODO(), bson.D{{"email", Email}})
+	//if err != nil {
+	//	return err
+	//}
+	//fmt.Printf("%+v", results)
+	fmt.Printf("%+v", user)
+	return nil
 }
 
 func (m *mongoRepo) GetUserByEmail(Email string) (*model.User, error) {
-	//TODO implement me
-	panic("implement me")
+	var user model.User
+	err := m.collection.FindOne(context.TODO(), bson.D{{"email", Email}}).Decode(&user)
+	if err != nil {
+		return nil, mongo.ErrNoDocuments
+	}
+	return &user, nil
 }

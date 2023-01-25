@@ -8,11 +8,10 @@ import (
 )
 
 func MongoInitialize() *mongo.Client {
-	uri := "mongodb://localhost:27017"
+	uri := "mongodb://pg:123@localhost:27017"
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Println(err)
-
 	}
 
 	return client
