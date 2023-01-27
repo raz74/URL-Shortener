@@ -7,12 +7,13 @@ import (
 	"shortened_link/handler"
 	"shortened_link/repository"
 	"shortened_link/repository/token"
+	urlRepository "shortened_link/repository/url"
 	"shortened_link/repository/userRepository"
 	"shortened_link/service/url"
 )
 
 func main() {
-	db := repository.Initialize()
+	//db := repository.Initialize()
 	mongodb := repository.MongoInitialize()
 	//r := repository.PostgresUserRepositoryImpl{
 	//	PostgresDb: db,
@@ -31,8 +32,11 @@ func main() {
 
 	h := handler.NewUserHandler(rMongo, tMongo)
 
-	urlService := url.PostgresUrlServiceImpl{DB: db}
-	urlHandler := handler.NewUrlHandler(&urlService, tMongo)
+	//urlService := url.PostgresUrlServiceImpl{DB: db}
+
+	urlMongo := urlRepository.NewMongoUrlRepoImp(mongodb)
+	urlService := url.NewUrlService(urlMongo)
+	urlHandler := handler.NewUrlHandler(urlService, tMongo)
 
 	e := echo.New()
 	e.POST("/shorted", urlHandler.CreateShortedUrl)

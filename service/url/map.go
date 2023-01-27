@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
 var shortToSrcMap = map[string]model.ShortedUrl{}
@@ -107,13 +107,13 @@ func (u *UrlServiceImpl) DeleteUrl(shorted string) error {
 }
 
 func (u *UrlServiceImpl) generateShortedUrl() (string, error) {
-	lenght := len(alphabet)
+	lenght := len(Alphabet)
 	shortUrl := ""
 	count := len(shortToSrcMap) + 1
 	for count > 0 {
 		i := count % lenght
-		shortUrl += string(alphabet[i])
-		count = (count - i) / len(alphabet)
+		shortUrl += string(Alphabet[i])
+		count = (count - i) / len(Alphabet)
 	}
 	return shortUrl, nil
 }

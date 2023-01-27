@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"shortened_link/model"
+	"shortened_link/service/url"
 	"time"
 )
 
@@ -108,13 +109,13 @@ func (p *PostgresUrlServiceImpl) DeleteUrl(shorted string) error {
 }
 
 func (p *PostgresUrlServiceImpl) generateShortedUrl() string {
-	lenght := int64(len(alphabet))
+	lenght := int64(len(url.Alphabet))
 	var count int64
 	shortUrl := ""
 	p.DB.Model(&model.ShortedUrl{}).Count(&count)
 	for count > 0 {
 		i := count % lenght
-		shortUrl += string(alphabet[i])
+		shortUrl += string(url.Alphabet[i])
 		count = (count - i) / lenght
 	}
 	return shortUrl
